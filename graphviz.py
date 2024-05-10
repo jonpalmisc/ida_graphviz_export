@@ -3,6 +3,7 @@ import ida_kernwin
 import ida_funcs
 import ida_gdl
 import ida_lines
+import ida_name
 import ida_ua
 
 
@@ -24,6 +25,9 @@ def to_dot(func: ida_funcs.func_t) -> str:
     blocks = ida_gdl.FlowChart(func)
     for block in blocks:
         body = ""
+
+        if label := ida_name.get_short_name(block.start_ea):
+            body += label + ":\n"
 
         cur_ea = block.start_ea
         while cur_ea < block.end_ea:
