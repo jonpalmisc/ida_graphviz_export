@@ -12,7 +12,7 @@ Run `make install` (assuming you are on macOS or Linux), or otherwise place the
 Graphviz code for a function's CFG can be obtained in one of two ways:
 
 1. Use the _Create Graphviz DOT file_ action under the _File > Produce file_ menu.
-2. Use the _Dump Graphviz DOT code_ action via the command palette.
+2. Use the _Graphviz_ submenu in the context menu of disassembly views.
 
 ## License
 

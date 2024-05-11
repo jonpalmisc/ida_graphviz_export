@@ -76,6 +76,29 @@ class export_dot_handler_t(ida_kernwin.action_handler_t):
         return ida_kernwin.AST_ENABLE if ctx.cur_func else ida_kernwin.AST_DISABLE
 
 
+class graphviz_ui_hooks_t(ida_kernwin.UI_Hooks):
+    popup_actions = []
+
+    def finish_populating_widget_popup(self, widget, popup):  # pyright: ignore
+        if ida_kernwin.get_widget_type(widget) != ida_kernwin.BWN_DISASM:
+            return
+
+        ida_kernwin.attach_action_to_popup(
+            widget,
+            popup,
+            "graphviz:ProduceDOT",
+            f"&Graphviz/",
+            ida_kernwin.SETMENU_APP,
+        )
+        ida_kernwin.attach_action_to_popup(
+            widget,
+            popup,
+            "graphviz:DumpDOT",
+            f"&Graphviz/",
+            ida_kernwin.SETMENU_APP,
+        )
+
+
 class graphviz_plugin_t(ida_idaapi.plugin_t):
     flags = ida_idaapi.PLUGIN_DRAW | ida_idaapi.PLUGIN_HIDE
     help = ""
@@ -83,11 +106,15 @@ class graphviz_plugin_t(ida_idaapi.plugin_t):
     wanted_name = "graphviz"
     wanted_hotkey = ""
 
+    ui_hooks: graphviz_ui_hooks_t
+
     def init(self):
+        self.ui_hooks = graphviz_ui_hooks_t()
+
         ida_kernwin.register_action(
             ida_kernwin.action_desc_t(
                 "graphviz:ProduceDOT",
-                "Create Graphviz DOT file...",
+                "~C~reate Graphviz DOT file...",
                 export_dot_handler_t(False),
                 None,
                 "Export the current function's CFG as Graphviz DOT code",
@@ -96,7 +123,7 @@ class graphviz_plugin_t(ida_idaapi.plugin_t):
         ida_kernwin.register_action(
             ida_kernwin.action_desc_t(
                 "graphviz:DumpDOT",
-                "Dump Graphviz DOT code",
+                "~D~ump Graphviz DOT code",
                 export_dot_handler_t(True),
                 None,
                 "Print the current function's CFG as Graphviz DOT code in the command line window",
@@ -109,13 +136,14 @@ class graphviz_plugin_t(ida_idaapi.plugin_t):
             ida_kernwin.SETMENU_APP | ida_kernwin.SETMENU_ENSURE_SEP,
         )
 
+        self.ui_hooks.hook()
         return ida_idaapi.PLUGIN_KEEP
 
     def run(self):  # pyright: ignore
-        print("Plugin cannot be run as a script!")
+        pass
 
     def term(self):
-        pass
+        self.ui_hooks.unhook()
 
 
 def PLUGIN_ENTRY():
